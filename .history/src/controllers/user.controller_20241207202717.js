@@ -101,6 +101,13 @@ const updateUser = async (req, res, next) => {
 // Delete a user
 const deleteUser = async (req, res, next) => {
   const { id } = req.params;
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return next(createError(409, "A user with this email already exists"));
+    }
+  if (await prisma.user.findUnique({ where: { id: parseInt(id) } })) {
+    return res.status(404).json({ error: "User not found" });
+  }
   try {
     await prisma.user.delete({ where: { id: parseInt(id) } });
     res.status(204).send();

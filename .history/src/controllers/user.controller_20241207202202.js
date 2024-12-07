@@ -71,16 +71,12 @@ const updateUser = async (req, res, next) => {
   const { name, email, password, role } = req.body;
 
   try {
-    const existingUser = await prisma.user.findUnique({
-      where: { id: parseInt(id) },
-    });
+    const existingUser = await prisma.user.findUnique({ where: { id: parseInt(id) } });
     if (!existingUser) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: 'User not found' });
     }
 
-    const hashedPassword = password
-      ? await bcrypt.hash(password, 10)
-      : existingUser.password;
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : existingUser.password;
 
     const user = await prisma.user.update({
       where: { id: parseInt(id) },

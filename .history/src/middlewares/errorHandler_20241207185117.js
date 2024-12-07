@@ -9,7 +9,7 @@ const errorHandler = (err, req, res, next) => {
     err = createError(500, err.message);
   }
 
-  // console.error(err.stack);
+  console.error(err.stack);
 
   res.status(err.status || 500).json({
     status: err.status,

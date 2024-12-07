@@ -101,6 +101,11 @@ const updateUser = async (req, res, next) => {
 // Delete a user
 const deleteUser = async (req, res, next) => {
   const { id } = req.params;
+  const existingUser = await prisma.user.findUnique({ where: { id: id } });
+    if (!existingUser) {
+      return next(createError(409,`"));
+    }
+ 
   try {
     await prisma.user.delete({ where: { id: parseInt(id) } });
     res.status(204).send();

@@ -1,5 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-import createError from "http-errors";
+import { PrismaClient } from '@prisma/client';
+import createError from 'http-errors';
 
 const prisma = new PrismaClient();
 
@@ -22,7 +22,7 @@ const getProjectById = async (req, res, next) => {
       include: { owner: true, members: true, tasks: true },
     });
     if (!project) {
-      return next(createError(404, "Project not found"));
+      return next(createError(404, 'Project not found'));
     }
     res.status(200).json(project);
   } catch (error) {
@@ -32,8 +32,7 @@ const getProjectById = async (req, res, next) => {
 
 // Create a new project
 const createProject = async (req, res, next) => {
-  const { name, description, status, startDate, endDate, ownerId, memberIds } =
-    req.body;
+  const { name, description, status, startDate, endDate, ownerId, memberIds } = req.body;
   try {
     const project = await prisma.project.create({
       data: {
@@ -43,9 +42,7 @@ const createProject = async (req, res, next) => {
         startDate: new Date(startDate),
         endDate: endDate ? new Date(endDate) : null,
         owner: { connect: { id: ownerId } },
-        members: memberIds
-          ? { connect: memberIds.map((id) => ({ id })) }
-          : undefined,
+        members: memberIds ? { connect: memberIds.map(id => ({ id })) } : undefined,
       },
     });
     res.status(201).json(project);
@@ -67,9 +64,7 @@ const updateProject = async (req, res, next) => {
         status,
         startDate: new Date(startDate),
         endDate: endDate ? new Date(endDate) : null,
-        members: memberIds
-          ? { set: memberIds.map((id) => ({ id })) }
-          : undefined,
+        members: memberIds ? { set: memberIds.map(id => ({ id })) } : undefined,
       },
     });
     res.status(200).json(project);
@@ -83,7 +78,7 @@ const deleteProject = async (req, res, next) => {
   const { id } = req.params;
   try {
     await prisma.project.delete({ where: { id: parseInt(id) } });
-    res.status(204).json("Project deleted successfully");
+    res.status(204).json(message:  );
   } catch (error) {
     next(error);
   }
@@ -97,7 +92,7 @@ const addProjectMembers = async (req, res, next) => {
     const project = await prisma.project.update({
       where: { id: parseInt(id) },
       data: {
-        members: { connect: memberIds.map((id) => ({ id })) },
+        members: { connect: memberIds.map(id => ({ id })) },
       },
     });
     res.status(200).json(project);
@@ -114,7 +109,7 @@ const removeProjectMembers = async (req, res, next) => {
     const project = await prisma.project.update({
       where: { id: parseInt(id) },
       data: {
-        members: { disconnect: memberIds.map((id) => ({ id })) },
+        members: { disconnect: memberIds.map(id => ({ id })) },
       },
     });
     res.status(200).json(project);

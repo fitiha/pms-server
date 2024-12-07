@@ -66,37 +66,7 @@ const getUser = async (req, res, next) => {
 };
 
 // Update user details
-const updateUser = async (req, res, next) => {
-  const { id } = req.params;
-  const { name, email, password, role } = req.body;
 
-  try {
-    const existingUser = await prisma.user.findUnique({
-      where: { id: parseInt(id) },
-    });
-    if (!existingUser) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const hashedPassword = password
-      ? await bcrypt.hash(password, 10)
-      : existingUser.password;
-
-    const user = await prisma.user.update({
-      where: { id: parseInt(id) },
-      data: {
-        name: name !== undefined ? name : existingUser.name,
-        email: email !== undefined ? email : existingUser.email,
-        password: hashedPassword,
-        role: role !== undefined ? role : existingUser.role,
-      },
-    });
-
-    res.status(200).json(user);
-  } catch (error) {
-    next(error);
-  }
-};
 
 // Delete a user
 const deleteUser = async (req, res, next) => {
