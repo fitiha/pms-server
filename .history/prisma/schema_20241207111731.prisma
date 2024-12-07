@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  role      Role      @default(USER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  projects  Project[] @relation("ProjectMembers")
+  ownedProjects Project[] @relation("ProjectOwner")
+  tasks     Task[]    @relation("TaskAssignee")
+  comments  Comment[]
+
+  @@map("users")
+}
+
+model Project {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  status      ProjectStatus @default(ONGOING)
+  startDate   DateTime
+  endDate     DateTime?
+  ownerId     Int
+  owner       User      @relation("ProjectOwner", fields: [ownerId], references: [id]) // Specify the relation name
+  members     User[]    @relation("ProjectMembers")
+  tasks       Task[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("projects")
+}
+
+model Task {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  status      TaskStatus @default(PENDING)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime
+  projectId   Int
+  project     Project   @relation(fields: [projectId], references: [id])
+  assigneeId  Int?
+  assignee    User?     @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  comments    Comment[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("tasks")
+}
+
+model Comment {
+  id        Int       @id @default(autoincrement())
+  content   String
+  taskId    Int
+  task      Task      @relation(fields: [taskId], references: [id])
+  authorId  Int
+  author    User      @relation(fields: [authorId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("comments")
+}
+
+enum Role {
+  ADMIN
+  PROJECT_MANAGER
+  USER
+}
+
+enum ProjectStatus {
+  ONGOING
+  COMPLETED
+  ARCHIVED
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
