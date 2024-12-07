@@ -1,7 +1,7 @@
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import createError from "http-errors";
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import createError from 'http-errors';
 
 const prisma = new PrismaClient();
 const secret = process.env.JWT_SECRET;
@@ -10,19 +10,14 @@ const secret = process.env.JWT_SECRET;
 const registerUser = async (req, res, next) => {
   const { name, email, password, role } = req.body;
   try {
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      return next(createError(409, "A user with this email already exists"));
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        role,
-      },
+        role
+      }
     });
     res.status(201).json(user);
   } catch (error) {
@@ -36,16 +31,14 @@ const loginUser = async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return next(createError(404, "User not found"));
+      return next(createError(404, 'User not found'));
     }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return next(createError(401, "Invalid password"));
+      return next(createError(401, 'Invalid password'));
     }
-    const token = jwt.sign({ userId: user.id, role: user.role }, secret, {
-      expiresIn: "1h",
-    });
-    res.status(200).json({ message: "Login successful", token: token });
+    const token = jwt.sign({ userId: user.id, role: user.role }, secret, { expiresIn: '1h' });
+    res.status(200).json({ token });
   } catch (error) {
     next(error);
   }
@@ -57,7 +50,7 @@ const getUser = async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: parseInt(id) } });
     if (!user) {
-      return next(createError(404, "User not found"));
+      return next(createError(404, 'User not found'));
     }
     res.status(200).json(user);
   } catch (error) {
@@ -70,17 +63,15 @@ const updateUser = async (req, res, next) => {
   const { id } = req.params;
   const { name, email, password, role } = req.body;
   try {
-    const hashedPassword = password
-      ? await bcrypt.hash(password, 10)
-      : undefined;
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
     const user = await prisma.user.update({
       where: { id: parseInt(id) },
       data: {
         name,
         email,
         password: hashedPassword,
-        role,
-      },
+        role
+      }
     });
     res.status(200).json(user);
   } catch (error) {
@@ -99,4 +90,10 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
-export { registerUser, loginUser, getUser, updateUser, deleteUser };
+export {
+  registerUser,
+  loginUser,
+  getUser,
+  updateUser,
+  deleteUser
+};
