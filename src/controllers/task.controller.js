@@ -72,9 +72,80 @@ const deleteTask = async (req, res, next) => {
   }
 };
 
+// Get all tasks (with optional filtering by status, priority, or assignee)
+const getAllTasks = async (req, res, next) => {
+  const { status, priority, assigneeId } = req.query;
+  try {
+    const tasks = await prisma.task.findMany({
+      where: {
+        status: status || undefined,
+        priority: priority || undefined,
+        assigneeId: assigneeId ? parseInt(assigneeId) : undefined,
+      },
+      include: { assignee: true, comments: true },
+    });
+    res.status(200).json(tasks);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get a specific task by ID
+const getTaskById = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const task = await prisma.task.findUnique({
+      where: { id: parseInt(id) },
+      include: { assignee: true, comments: true },
+    });
+    if (!task) {
+      throw createError(404, 'Task not found');
+    }
+    res.status(200).json(task);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Assign a task to a user
+const assignTask = async (req, res, next) => {
+  const { id } = req.params;
+  const { assigneeId } = req.body;
+  try {
+    const task = await prisma.task.update({
+      where: { id: parseInt(id) },
+      data: {
+        assignee: assigneeId ? { connect: { id: assigneeId } } : undefined,
+      },
+    });
+    res.status(200).json(task);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get all comments for a specific task
+const getCommentsByTaskId = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const comments = await prisma.comment.findMany({
+      where: { taskId: parseInt(id) },
+      include: { author: true },
+    });
+    res.status(200).json(comments);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export {
   getTasksByProjectId,
   createTask,
   updateTask,
   deleteTask,
+  getAllTasks,
+  getTaskById,
+  assignTask,
+  getCommentsByTaskId,
 };
+

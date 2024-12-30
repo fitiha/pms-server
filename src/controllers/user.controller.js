@@ -65,6 +65,50 @@ const getUser = async (req, res, next) => {
   }
 };
 
+// Get all users
+const getUsers = async (req, res, next) => {
+  try {
+    const users = await prisma.user.findMany();
+    res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get projects a user is a member of
+const getUserProjects = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(id) },
+      include: { projects: true },
+    });
+    if (!user) {
+      return next(createError(404, "User not found"));
+    }
+    res.status(200).json(user.projects);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get projects owned by a user
+const getUserOwnedProjects = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(id) },
+      include: { ownedProjects: true },
+    });
+    if (!user) {
+      return next(createError(404, "User not found"));
+    }
+    res.status(200).json(user.ownedProjects);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Update user details
 const updateUser = async (req, res, next) => {
   const { id } = req.params;
@@ -109,4 +153,13 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
-export { registerUser, loginUser, getUser, updateUser, deleteUser };
+export {
+  registerUser,
+  loginUser,
+  getUser,
+  getUsers,
+  getUserProjects,
+  getUserOwnedProjects,
+  updateUser,
+  deleteUser,
+};

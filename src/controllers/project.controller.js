@@ -123,6 +123,81 @@ const removeProjectMembers = async (req, res, next) => {
   }
 };
 
+// Get all tasks for a specific project
+const getTasksByProjectId = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const tasks = await prisma.task.findMany({
+      where: { projectId: parseInt(id) },
+      include: { assignee: true, comments: true },
+    });
+    res.status(200).json(tasks);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// Remove a specific member from the project
+const removeSpecificProjectMember = async (req, res, next) => {
+  const { id, userId } = req.params;
+  try {
+    const project = await prisma.project.update({
+      where: { id: parseInt(id) },
+      data: {
+        members: { disconnect: { id: parseInt(userId) } },
+      },
+    });
+    res.status(200).json(project);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get projects filtered by status
+const getProjectsByStatus = async (req, res, next) => {
+  const { status } = req.query;
+  try {
+    const projects = await prisma.project.findMany({
+      where: status ? { status } : undefined,
+    });
+    res.status(200).json(projects);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// Create a new project (restricted by role)
+const createRoleBasedProject = async (req, res, next) => {
+  const { name, description, status, startDate, endDate, ownerId, memberIds } =
+    req.body;
+  try {
+    const user = await prisma.user.findUnique({ where: { id: ownerId } });
+    if (!user || !["ADMIN", "PROJECT_MANAGER"].includes(user.role)) {
+      return next(createError(403, "You do not have permission to create a project"));
+    }
+
+    const project = await prisma.project.create({
+      data: {
+        name,
+        description,
+        status,
+        startDate: new Date(startDate),
+        endDate: endDate ? new Date(endDate) : null,
+        owner: { connect: { id: ownerId } },
+        members: memberIds
+          ? { connect: memberIds.map((id) => ({ id })) }
+          : undefined,
+      },
+    });
+    res.status(201).json(project);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 export {
   getAllProjects,
   getProjectById,
@@ -131,4 +206,9 @@ export {
   deleteProject,
   addProjectMembers,
   removeProjectMembers,
+  getTasksByProjectId,
+  removeSpecificProjectMember,
+  getProjectsByStatus,
+  createRoleBasedProject
 };
+
