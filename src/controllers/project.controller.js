@@ -137,7 +137,6 @@ const getTasksByProjectId = async (req, res, next) => {
   }
 };
 
-
 // Remove a specific member from the project
 const removeSpecificProjectMember = async (req, res, next) => {
   const { id, userId } = req.params;
@@ -159,14 +158,13 @@ const getProjectsByStatus = async (req, res, next) => {
   const { status } = req.query;
   try {
     const projects = await prisma.project.findMany({
-      where: status ? { status } : undefined,
+      where: status && status !== "ALL" ? { status } : undefined,
     });
     res.status(200).json(projects);
   } catch (error) {
     next(error);
   }
 };
-
 
 // Create a new project (restricted by role)
 const createRoleBasedProject = async (req, res, next) => {
@@ -175,7 +173,9 @@ const createRoleBasedProject = async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: ownerId } });
     if (!user || !["ADMIN", "PROJECT_MANAGER"].includes(user.role)) {
-      return next(createError(403, "You do not have permission to create a project"));
+      return next(
+        createError(403, "You do not have permission to create a project")
+      );
     }
 
     const project = await prisma.project.create({
@@ -197,7 +197,6 @@ const createRoleBasedProject = async (req, res, next) => {
   }
 };
 
-
 export {
   getAllProjects,
   getProjectById,
@@ -209,6 +208,5 @@ export {
   getTasksByProjectId,
   removeSpecificProjectMember,
   getProjectsByStatus,
-  createRoleBasedProject
+  createRoleBasedProject,
 };
-

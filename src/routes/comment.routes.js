@@ -1,7 +1,6 @@
 import express from 'express';
 import {
   getCommentsByTaskId,
-  addCommentToTask,
   deleteCommentFromTask,
   getAllComments,
   getCommentById,
@@ -19,7 +18,6 @@ router.put('/:id', updateComment);
 router.delete('/:id', deleteComment);
 
 router.get('/tasks/:taskId/comments', getCommentsByTaskId);
-router.post('/tasks/:taskId/comments', addCommentToTask);
 router.delete('/tasks/:taskId/comments/:id', deleteCommentFromTask);
 
 export default router;

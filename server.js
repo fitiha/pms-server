@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import errorHandler from "./src/middlewares/errorHandler.js";
@@ -11,6 +12,7 @@ import commentRouter from "./src/routes/comment.routes.js";
 dotenv.config();
 
 const app = express();
+app.use(cors());
 const port = process.env.PORT || 5000;
 
 // Middlewares

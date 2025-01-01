@@ -81,27 +81,8 @@ const getCommentsByTaskId = async (req, res, next) => {
   try {
     const comments = await prisma.comment.findMany({
       where: { taskId: parseInt(taskId) },
-      include: { user: true },
     });
     res.status(200).json(comments);
-  } catch (error) {
-    next(error);
-  }
-};
-
-// Add a comment to a task
-const addCommentToTask = async (req, res, next) => {
-  const { taskId } = req.params;
-  const { content, userId } = req.body;
-  try {
-    const comment = await prisma.comment.create({
-      data: {
-        content,
-        task: { connect: { id: parseInt(taskId) } },
-        user: { connect: { id: userId } },
-      },
-    });
-    res.status(201).json(comment);
   } catch (error) {
     next(error);
   }
@@ -112,7 +93,7 @@ const deleteCommentFromTask = async (req, res, next) => {
   const { id } = req.params;
   try {
     await prisma.comment.delete({ where: { id: parseInt(id) } });
-    res.status(204).send();
+    res.status(204).send("Comment deleted from task");
   } catch (error) {
     next(error);
   }
@@ -125,6 +106,5 @@ export {
   updateComment,
   deleteComment,
   getCommentsByTaskId,
-  addCommentToTask,
   deleteCommentFromTask,
 };
